@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocArtAtlier</title>
+    <!-- React and ReactDOM from CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Configure Tailwind to use JIT mode for faster compilation
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+          },
+        }
+      }
+    </script>
+    <!-- Lucide React icons, converted to a self-contained script -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="bg-sky-200 antialiased font-sans">
+    <div id="root"></div>
+
+    <script type="text/javascript">
+        // All of your React code goes here within this script tag
+        const { useState, useEffect, createElement: e } = React;
+        const { createRoot } = ReactDOM;
+
+        // Helper function for creating elements with class names
+        const c = (type, props, ...children) => e(type, props, ...children);
+
+        // Convert Lucide icons to React components
+        const lucideIcons = lucide.icons;
+        const BookA = () => c('span', { dangerouslySetInnerHTML: { __html: lucide.createIcons.BookA } });
+        const Laugh = () => c('span', { dangerouslySetInnerHTML: { __html: lucide.createIcons.Laugh } });
+        const Book = () => c('span', { dangerouslySetInnerHTML: { __html: lucide.createIcons.Book } });
+        const Gamepad = () => c('span', { dangerouslySetInnerHTML: { __html: lucide.createIcons.Gamepad } });
+        const Handshake = () => c('span', { dangerouslySetInnerHTML: { __html: lucide.createIcons.Handshake } });
+        const icons = { BookA, Laugh, Book, Gamepad, Handshake };
+
+        // --- Data for the app ---
+        const bibleVerses = [
+            { text: "For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life.", citation: "John 3:16" },
+            { text: "The Lord is my shepherd; I shall not want.", citation: "Psalm 23:1" },
+            { text: "I can do all things through him who strengthens me.", citation: "Philippians 4:13" },
+            { text: "In the beginning was the Word, and the Word was with God, and the Word was God.", citation: "John 1:1" },
+            { text: "The steadfast love of the Lord never ceases; his mercies never come to an end; they are new every morning; great is your faithfulness.", citation: "Lamentations 3:22-23" },
+        ];
+        
+        const dadJokes = [
+            "I'm afraid for the calendar. Its days are numbered.",
+            "What do you call a fake noodle? An Impasta.",
+            "I would tell you a joke about an apple, but it's not a very good one.",
+            "Why don't scientists trust atoms? Because they make up everything!",
+            "I'm reading a book on anti-gravity. It's impossible to put down!",
+        ];
+
+        const ebooks = [
+            {
+                id: 1,
+                title: "Detroit Sentinels",
+                description: "A fictional story infused with biblical truth. We hope you enjoy and also received spiritual wisdom.",
+                price: "Free",
+            },
+        ];
+
+        // --- Main App Component ---
+        const App = () => {
+            const [currentVerse, setCurrentVerse] = useState(bibleVerses[0]);
+            const [currentJoke, setCurrentJoke] = useState(dadJokes[0]);
+            const [currentPage, setCurrentPage] = useState('home');
+            const [messageBox, setMessageBox] = useState({ visible: false, text: '' });
+            const [currentGame, setCurrentGame] = useState('menu');
+            
+            const [secretNumber, setSecretNumber] = useState(Math.floor(Math.random() * 100) + 1);
+            const [guess, setGuess] = useState('');
+            const [message, setMessage] = useState('Guess a number between 1 and 100.');
+            const [attempts, setAttempts] = useState(0);
+            
+            const [rpsMessage, setRpsMessage] = useState('Choose your weapon!');
+            const [playerChoice, setPlayerChoice] = useState(null);
+            const [computerChoice, setComputerChoice] = useState(null);
+            
+            const [board, setBoard] = useState(Array(9).fill(null));
+            const [xIsNext, setXIsNext] = useState(true);
+            const [tttMessage, setTttMessage] = useState('Next player: X');
+            
+            const [playerCharacter, setPlayerCharacter] = useState(null);
+            const [scene, setScene] = useState('intro');
+            const [customName, setCustomName] = useState('');
+            const [playerHp, setPlayerHp] = useState(10);
+            const [enemyHp, setEnemyHp] = useState(5);
+            const [enemyName, setEnemyName] = useState('Spiritual Force of Evil');
+            const [battleLog, setBattleLog] = useState([]);
+            const [isPlayerTurn, setIsPlayerTurn] = useState(true);
+            
+            const handleGuess = () => {
+                const userGuess = parseInt(guess, 10);
+                if (isNaN(userGuess)) {
+                    setMessage('Please enter a valid number!');
+                    return;
+                }
+                setAttempts(attempts + 1);
+                
+                if (userGuess === secretNumber) {
+                    setMessage(`You got it! The number was ${secretNumber}. It took you ${attempts + 1} attempts.`);
+                    setSecretNumber(Math.floor(Math.random() * 100) + 1);
+                } else if (userGuess > secretNumber) {
+                    setMessage('Too high! Try again.');
+                } else {
+                    setMessage('Too low! Try again.');
+                }
+                setGuess('');
+            };
+            
+            const getRandomVerse = () => {
+                const randomIndex = Math.floor(Math.random() * bibleVerses.length);
+                setCurrentVerse(bibleVerses[randomIndex]);
+            };
+            
+            const getRandomJoke = () => {
+                const randomIndex = Math.floor(Math.random() * dadJokes.length);
+                setCurrentJoke(dadJokes[randomIndex]);
+            };
+            
+            const handleRpsPlay = (choice) => {
+                const choices = ['Rock', 'Paper', 'Scissors'];
+                const computerIndex = Math.floor(Math.random() * 3);
+                const computerSelection = choices[computerIndex];
+                
+                setPlayerChoice(choice);
+                setComputerChoice(computerSelection);
+
+                if (choice === computerSelection) {
+                    setRpsMessage("It's a tie!");
+                } else if (
+                    (choice === 'Rock' && computerSelection === 'Scissors') ||
+                    (choice === 'Paper' && computerSelection === 'Rock') ||
+                    (choice === 'Scissors' && computerSelection === 'Paper')
+                ) {
+                    setRpsMessage("You win!");
+                } else {
+                    setRpsMessage("You lose!");
+                }
+            };
+            
+            const checkWinner = (squares) => {
+                const lines = [
+                    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                    [0, 4, 8], [2, 4, 6],
+                ];
+                for (let i = 0; i < lines.length; i++) {
+                    const [a, b, c] = lines[i];
+                    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+                        return squares[a];
+                    }
+                }
+                return null;
+            };
+
+            const handleTttClick = (i) => {
+                const squares = [...board];
+                if (checkWinner(squares) || squares[i]) {
+                    return;
+                }
+                squares[i] = xIsNext ? 'X' : 'O';
+                setBoard(squares);
+                setXIsNext(!xIsNext);
+                
+                const winner = checkWinner(squares);
+                if (winner) {
+                    setTttMessage(`Winner: ${winner}`);
+                } else if (squares.every(Boolean)) {
+                    setTttMessage("It's a draw!");
+                } else {
+                    setTttMessage(`Next player: ${xIsNext ? 'O' : 'X'}`);
+                }
+            };
+            
+            const renderSquare = (i) => {
+                return c('button', {
+                    className: "w-20 h-20 text-4xl font-bold bg-white border border-gray-400 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105",
+                    onClick: () => handleTttClick(i)
+                }, board[i]);
+            };
+
+            const resetTtt = () => {
+                setBoard(Array(9).fill(null));
+                setXIsNext(true);
+                setTttMessage('Next player: X');
+            };
+
+            const handleCharacterSelect = (character) => {
+                setPlayerCharacter(character);
+                setScene('game-start');
+            };
+            
+            const handlePlayerAttack = () => {
+                if (!isPlayerTurn) return;
+
+                const playerDamage = Math.floor(Math.random() * 3) + 1;
+                const newEnemyHp = enemyHp - playerDamage;
+                setEnemyHp(newEnemyHp);
+                setBattleLog(log => [...log, `You strike the enemy for ${playerDamage} damage.`]);
+
+                if (newEnemyHp <= 0) {
+                    setScene('victory');
+                } else {
+                    setIsPlayerTurn(false);
+                    setTimeout(() => {
+                        const enemyDamage = Math.floor(Math.random() * 2) + 1;
+                        const newPlayerHp = playerHp - enemyDamage;
+                        setPlayerHp(newPlayerHp);
+                        setBattleLog(log => [...log, `${enemyName} retaliates for ${enemyDamage} damage.`]);
+                        if (newPlayerHp <= 0) {
+                            setScene('game-over');
+                        } else {
+                            setIsPlayerTurn(true);
+                        }
+                    }, 1000);
+                }
+            };
+
+            const resetGame = () => {
+                setPlayerCharacter(null);
+                setScene('intro');
+                setCustomName('');
+                setPlayerHp(10);
+                setEnemyHp(5);
+                setBattleLog([]);
+                setIsPlayerTurn(true);
+            };
+
+            const renderMessageBox = () => {
+                if (!messageBox.visible) {
+                    return null;
+                }
+                return c('div', { className: "fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50" },
+                    c('div', { className: "bg-white p-6 rounded-xl shadow-lg text-center max-w-sm w-full" },
+                        c('p', { className: "text-gray-800 font-semibold mb-4" }, messageBox.text),
+                        c('button', {
+                            onClick: () => setMessageBox({ visible: false, text: '' }),
+                            className: "bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition transform hover:scale-105"
+                        }, 'OK')
+                    )
+                );
+            };
+
+            const renderContent = () => {
+                switch (currentPage) {
+                    case 'home':
+                        return c('div', null,
+                            c('div', { className: "relative mb-6 text-center text-gray-700" },
+                                c('p', { className: "text-lg font-semibold" }, 'Thanks for downloading! 🙏'),
+                                c('p', { className: "mt-1" },
+                                    'Feel free to add me on YouTube and TikTok',
+                                    c('br', null),
+                                    c('a', { href: "https://www.youtube.com/@docart07", target: "_blank", rel: "noopener noreferrer", className: "text-blue-500 hover:text-blue-700 font-bold" }, '@docart07')
+                                )
+                            ),
+                            c('div', { className: "relative mb-6" },
+                                c('img', {
+                                    src: "https://placehold.co/400x400/94a3b8/0f172a?text=Docart07",
+                                    alt: "User's profile graphic",
+                                    className: "w-full rounded-xl shadow-lg border-2 border-gray-200"
+                                })
+                            ),
+                            c('div', { className: "flex flex-col space-y-8" },
+                                c('div', { className: "bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-lg shadow-inner" },
+                                    c('div', { className: "flex items-center justify-center mb-4" },
+                                        c(icons.BookA, { size: 24, className: "mr-2" }),
+                                        c('h2', { className: "text-xl font-bold" }, 'Verse of the Day')
+                                    ),
+                                    c('p', { className: "text-center italic font-light mb-2" }, `"${currentVerse.text}"`),
+                                    c('p', { className: "text-right font-semibold text-sm" }, `-- ${currentVerse.citation}`),
+                                    c('div', { className: "flex justify-center mt-4" },
+                                        c('button', {
+                                            onClick: getRandomVerse,
+                                            className: "bg-white text-indigo-600 font-semibold py-2 px-4 rounded-full shadow-md transition transform hover:scale-105 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
+                                        }, 'New Verse')
+                                    )
+                                ),
+                                c('div', { className: "bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-6 rounded-lg shadow-inner" },
+                                    c('div', { className: "flex items-center justify-center mb-4" },
+                                        c(icons.Laugh, { size: 24, className: "mr-2" }),
+                                        c('h2', { className: "text-xl font-bold" }, 'Dad Joke')
+                                    ),
+                                    c('p', { className: "text-center font-light mb-2" }, `"${currentJoke}"`),
+                                    c('div', { className: "flex justify-center mt-4" },
+                                        c('button', {
+                                            onClick: getRandomJoke,
+                                            className: "bg-white text-orange-500 font-semibold py-2 px-4 rounded-full shadow-md transition transform hover:scale-105 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
+                                        }, 'Another Joke')
+                                    )
+                                )
+                            )
+                        );
+                    case 'ebooks':
+                        return c('div', null,
+                            c('h2', { className: "text-2xl font-bold text-center text-gray-800 mb-6" }, 'My Ebooks'),
+                            c('div', { className: "grid gap-6" },
+                                ebooks.map(ebook => c('div', { key: ebook.id, className: "bg-gray-50 p-6 rounded-xl shadow-md border border-gray-200 flex flex-col items-center text-center" },
+                                    c(icons.Book, { size: 48, className: "text-indigo-500 mb-3" }),
+                                    c('h3', { className: "text-lg font-bold text-gray-900" }, ebook.title),
+                                    c('p', { className: "text-sm text-gray-600 mt-1 mb-3" }, ebook.description),
+                                    c('span', { className: "text-xl font-bold text-indigo-600 mb-4" }, ebook.price),
+                                    c('button', {
+                                        onClick: () => setMessageBox({ visible: true, text: `Please note: This is a placeholder. In a real app, this would initiate the download for "${ebook.title}".` }),
+                                        className: "bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                    }, 'Download Now'),
+                                    c('div', { className: "mt-4 text-sm text-gray-700" },
+                                        c('p', null, 'Everything is free but if you would like to donate any amount you could do so via'),
+                                        c('a', {
+                                            href: "https://paypal.me/DenzelNewson93",
+                                            target: "_blank",
+                                            rel: "noopener noreferrer",
+                                            className: "font-bold text-blue-500 hover:text-blue-700 transition-colors"
+                                        }, 'PayPal @DenzelNewson93'),
+                                        c('p', { className: "mt-1" }, 'God bless.')
+                                    )
+                                ))
+                            ),
+                            c('p', { className: "text-center text-xs text-gray-500 mt-6" }, '*This "Download Now" button is for demonstration purposes only.')
+                        );
+                    case 'game':
+                        switch (currentGame) {
+                            case 'menu':
+                                return c('div', { className: "flex flex-col items-center p-6 space-y-4 text-center" },
+                                    c('h2', { className: "text-2xl font-bold text-gray-800" }, 'Select a Game'),
+                                    c('div', { className: "flex flex-col space-y-4 w-full" },
+                                        c('button', {
+                                            onClick: () => setCurrentGame('guess-number'),
+                                            className: "bg-purple-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-purple-700 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                                        }, 'Guess the Number'),
+                                        c('button', {
+                                            onClick: () => setCurrentGame('rps'),
+                                            className: "bg-red-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-red-700 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                        }, 'Rock, Paper, Scissors'),
+                                        c('button', {
+                                            onClick: () => setCurrentGame('tictactoe'),
+                                            className: "bg-green-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-green-700 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                        }, 'Tic-Tac-Toe'),
+                                        c('button', {
+                                            onClick: () => setCurrentGame('detroit-sentinels'),
+                                            className: "bg-blue-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-blue-700 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                        }, 'Detroit Sentinels Adventure 💪😎')
+                                    )
+                                );
+                            case 'guess-number':
+                                return c('div', { className: "flex flex-col items-center p-6 space-y-4 text-center" },
+                                    c('button', {
+                                        onClick: () => setCurrentGame('menu'),
+                                        className: "absolute top-4 left-4 text-gray-500 hover:text-gray-800 transition-colors"
+                                    }, '← Back'),
+                                    c('h2', { className: "text-2xl font-bold text-gray-800" }, 'Guess the Number'),
+                                    c('p', { className: "text-gray-600" }, message),
+                                    c('input', {
+                                        type: "number",
+                                        value: guess,
+                                        onChange: (e) => setGuess(e.target.value),
+                                        className: "w-full max-w-xs p-3 text-center text-gray-900 bg-gray-100 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                                        placeholder: "Enter your guess"
+                                    }),
+                                    c('button', {
+                                        onClick: handleGuess,
+                                        className: "bg-indigo-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-indigo-700 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                    }, 'Submit Guess'),
+                                    c('p', { className: "text-sm text-gray-500 mt-2" }, `Attempts: ${attempts}`)
+                                );
+                            case 'rps':
+                                return c('div', { className: "flex flex-col items-center p-6 space-y-6 text-center" },
+                                    c('button', {
+                                        onClick: () => setCurrentGame('menu'),
+                                        className: "absolute top-4 left-4 text-gray-500 hover:text-gray-800 transition-colors"
+                                    }, '← Back'),
+                                    c('h2', { className: "text-2xl font-bold text-gray-800" }, 'Rock, Paper, Scissors'),
+                                    c('p', { className: "text-gray-600 font-semibold" }, rpsMessage),
+                                    c('div', { className: "flex space-x-4" },
+                                        c('button', {
+                                            onClick: () => handleRpsPlay('Rock'),
+                                            className: "p-4 rounded-xl text-3xl transition-all duration-300 hover:scale-110 shadow-lg bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
+                                        }, '🪨'),
+                                        c('button', {
+                                            onClick: () => handleRpsPlay('Paper'),
+                                            className: "p-4 rounded-xl text-3xl transition-all duration-300 hover:scale-110 shadow-lg bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
+                                        }, '📄'),
+                                        c('button', {
+                                            onClick: () => handleRpsPlay('Scissors'),
+                                            className: "p-4 rounded-xl text-3xl transition-all duration-300 hover:scale-110 shadow-lg bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
+                                        }, '✂️')
+                                    ),
+                                    playerChoice && c('div', { className: "mt-4 text-center" },
+                                        c('p', { className: "text-lg font-bold" }, 'You chose: ', c('span', { className: "text-blue-600" }, playerChoice)),
+                                        c('p', { className: "text-lg font-bold" }, 'Computer chose: ', c('span', { className: "text-red-600" }, computerChoice))
+                                    )
+                                );
+                            case 'tictactoe':
+                                return c('div', { className: "flex flex-col items-center p-6 space-y-4 text-center" },
+                                    c('button', {
+                                        onClick: () => setCurrentGame('menu'),
+                                        className: "absolute top-4 left-4 text-gray-500 hover:text-gray-800 transition-colors"
+                                    }, '← Back'),
+                                    c('h2', { className: "text-2xl font-bold text-gray-800" }, 'Tic-Tac-Toe'),
+                                    c('p', { className: "text-gray-600 font-semibold" }, tttMessage),
+                                    c('div', { className: "grid grid-cols-3 gap-2" },
+                                        renderSquare(0), renderSquare(1), renderSquare(2),
+                                        renderSquare(3), renderSquare(4), renderSquare(5),
+                                        renderSquare(6), renderSquare(7), renderSquare(8)
+                                    ),
+                                    (checkWinner(board) || board.every(Boolean)) && c('button', {
+                                        onClick: resetTtt,
+                                        className: "bg-blue-600 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-blue-700 transition transform hover:scale-105"
+                                    }, 'Play Again')
+                                );
+                            case 'detroit-sentinels':
+                                return c('div', { className: "flex flex-col items-center p-6 space-y-6 text-center" },
+                                    c('button', {
+                                        onClick: () => setCurrentGame('menu'),
+                                        className: "absolute top-4 left-4 text-gray-500 hover:text-gray-800 transition-colors"
+                                    }, '← Back'),
+                                    c('h2', { className: "text-2xl font-bold text-gray-800" }, 'Detroit Sentinels Adventure'),
+                                    scene === 'intro' && c('div', { className: "flex flex-col items-center space-y-4" },
+                                        c('p', { className: "text-gray-600" }, 'Choose your character, or create your own! ✌️'),
+                                        c('div', { className: "flex space-x-4" },
+                                            c('button', { onClick: () => handleCharacterSelect('Al'), className: "bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-full shadow hover:bg-gray-300 transition-colors" }, 'Al Smith'),
+                                            c('button', { onClick: () => handleCharacterSelect('Sarah'), className: "bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-full shadow hover:bg-gray-300 transition-colors" }, 'Sarah Gonzalez'),
+                                            c('button', { onClick: () => handleCharacterSelect('Jack'), className: "bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-full shadow hover:bg-gray-300 transition-colors" }, 'Jack Roberts')
+                                        ),
+                                        c('div', { className: "w-full max-w-xs flex flex-col items-center space-y-2" },
+                                            c('input', {
+                                                type: "text",
+                                                value: customName,
+                                                onChange: (e) => setCustomName(e.target.value),
+                                                className: "w-full p-2 text-center text-gray-900 bg-gray-100 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500",
+                                                placeholder: "Or enter your name"
+                                            }),
+                                            c('button', {
+                                                onClick: () => handleCharacterSelect(customName || 'A new Sentinel'),
+                                                className: "bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition transform hover:scale-105"
+                                            }, 'Start Your Journey')
+                                        )
+                                    ),
+                                    scene === 'game-start' && c('div', { className: "text-center" },
+                                        c('p', { className: "text-lg text-gray-800 font-semibold mb-4" }, `Welcome, ${playerCharacter}! Your adventure begins now. 😎`),
+                                        playerCharacter === 'Al' && c('p', { className: "text-gray-600" }, `The basketball felt like an extension of your own hand. On the cracked court behind your house in Detroit, the rhythm of the dribble was the only thing that silenced the low hum of anxiety in your chest. A golden light, brighter than any stadium floodlight, flared in your peripheral vision. It wasn't outside you; it was inside you.`),
+                                        playerCharacter === 'Sarah' && c('p', { className: "text-gray-600" }, `Hunched over a chemistry textbook at the kitchen table, the numbers kept blurring. A voice, clear as a bell and warm as sunshine, whispered your name in your mind. "Do not be afraid," it said. A gentle warmth spread through you, and the air seemed to shimmer with faint, iridescent colors.`),
+                                        playerCharacter === 'Jack' && c('p', { className: "text-gray-600" }, `In the quiet of the public library, you traced the faded lines of an old city map. As your fingers brushed over a section, a faint, ethereal glow emanated from the paper. The hum of the lights and the rustle of pages faded away, replaced by the whisper of a distant, holy wind. You knew this was the start of something new.`),
+                                        (playerCharacter !== 'Al' && playerCharacter !== 'Sarah' && playerCharacter !== 'Jack') && c('p', { className: "text-gray-600" }, `You've been chosen for a divine mission in the heart of Detroit. You feel a sudden sense of purpose, a calling to fight a spiritual battle in this city. Your journey to become a Sentinel has just begun.`),
+                                        c('button', { onClick: () => setScene('city-exploration'), className: "mt-6 bg-blue-600 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-blue-700 transition transform hover:scale-105" }, 'Continue')
+                                    ),
+                                    scene === 'city-exploration' && c('div', { className: "text-center" },
+                                        c('p', { className: "text-lg text-gray-800 font-semibold mb-4" }, 'You are in the city of Detroit. What do you do?'),
+                                        c('p', { className: "text-gray-600" }, 'You feel a subtle pull towards a location where darkness seems to have taken hold.'),
+                                        c('button', { onClick: () => setScene('encounter'), className: "mt-6 bg-blue-600 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-blue-700 transition transform hover:scale-105" }, 'Follow the feeling')
+                                    ),
+                                    scene === 'encounter' && c('div', { className: "text-center" },
+                                        c('p', { className: "text-lg text-gray-800 font-semibold mb-4" }, 'You come face to face with a malevolent spiritual force. It\'s time to fight!'),
+                                        c('button', { onClick: () => setScene('combat'), className: "mt-6 bg-red-600 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-red-700 transition transform hover:scale-105" }, 'Engage in Combat')
+                                    ),
+                                    scene === 'combat' && c('div', { className: "text-center space-y-4" },
+                                        c('div', { className: "flex justify-around items-center w-full" },
+                                            c('div', { className: "flex flex-col items-center" },
+                                                c('span', { className: "text-lg font-bold text-red-600" }, enemyName),
+                                                c('div', { className: "w-24 h-4 bg-gray-300 rounded-full" },
+                                                    c('div', { className: "bg-red-500 h-full rounded-full", style: { width: `${(enemyHp / 5) * 100}%` } })
+                                                ),
+                                                c('span', { className: "text-sm" }, `${enemyHp} HP`)
+                                            ),
+                                            c('span', { className: "text-2xl font-extrabold text-gray-500" }, 'VS'),
+                                            c('div', { className: "flex flex-col items-center" },
+                                                c('span', { className: "text-lg font-bold text-blue-600" }, playerCharacter),
+                                                c('div', { className: "w-24 h-4 bg-gray-300 rounded-full" },
+                                                    c('div', { className: "bg-blue-500 h-full rounded-full", style: { width: `${(playerHp / 10) * 100}%` } })
+                                                ),
+                                                c('span', { className: "text-sm" }, `${playerHp} HP`)
+                                            )
+                                        ),
+                                        c('div', { className: "bg-gray-100 p-4 rounded-lg h-32 overflow-y-auto border border-gray-300" },
+                                            battleLog.map((log, index) => c('p', { key: index, className: "text-sm text-gray-700" }, log))
+                                        ),
+                                        c('button', {
+                                            onClick: handlePlayerAttack,
+                                            disabled: !isPlayerTurn,
+                                            className: "bg-green-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors"
+                                        }, 'Attack')
+                                    ),
+                                    scene === 'victory' && c('div', { className: "text-center" },
+                                        c('p', { className: "text-lg text-green-600 font-semibold mb-4" }, 'You have defeated the enemy! The light of God fills the area, dispelling the darkness. 😊'),
+                                        c('button', { onClick: resetGame, className: "mt-6 bg-blue-600 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-blue-700 transition transform hover:scale-105" }, 'Restart Journey')
+                                    ),
+                                    scene === 'game-over' && c('div', { className: "text-center" },
+                                        c('p', { className: "text-lg text-red-600 font-semibold mb-4" }, 'You have been overcome by the darkness. Your fight for Detroit ends here. 😔'),
+                                        c('button', { onClick: resetGame, className: "mt-6 bg-blue-600 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-blue-700 transition transform hover:scale-105" }, 'Try Again')
+                                    )
+                                );
+                            case 'purpose':
+                                return c('div', { className: "text-center p-4" },
+                                    c('h2', { className: "text-2xl font-bold text-gray-800 mb-4" }, 'Our Purpose'),
+                                    c('div', { className: "text-gray-700 space-y-4 text-left" },
+                                        c('p', null, 'Welcome, my name is Denzel but you can just call me DocArt and I care deeply for the youth! As a young man growing up in the inner city of Detroit I was always into drawing, basketball, riding bikes, video games etc etc. However I would see a lot of other youth get into wayward wicked activities that they had no business getting involved with. A lot of it was due to lack of resources and lack of parental leadership. And a lot of the time it was due to poor choices. However I don\'t think it is as bad as it is today.'),
+                                        c('p', null, 'Currently, the culture for our youth today is pushing them further away from outside, wholesome content and it is encouraging them to identify with dark things just to fit in. I created this site and the content I create to combat the culture because nothing is more good or greater than mine and your Lord and Savior Jesus Christ.'),
+                                        c('p', null, 'I believe If we put Him in everything we do we cannot fail and we also introduce others to Him. Playing a part in winning souls for His kingdom and taking souls from the opps kingdom.')
+                                    )
+                                );
+                            default:
+                                return null;
+                        }
+                    default:
+                        return null;
+                }
+            };
+            
+            return c('div', { className: "flex flex-col items-center justify-center min-h-screen p-4 font-sans bg-sky-200" },
+                renderMessageBox(),
+                c('div', { className: "relative bg-white bg-opacity-90 rounded-xl shadow-2xl p-6 md:p-10 w-full max-w-lg mb-4" },
+                    c('h1', { className: "text-3xl font-extrabold text-gray-900 text-center mb-6" }, 'DocArtAtlier'),
+                    renderContent()
+                ),
+                c('nav', { className: "relative bg-white rounded-full shadow-xl w-full max-w-sm mt-4 p-2 flex justify-around" },
+                    c('button', { onClick: () => { setCurrentPage('home'); setCurrentGame('menu'); }, className: `flex-1 flex flex-col items-center p-2 rounded-full transition-colors ${ currentPage === 'home' ? 'bg-indigo-100 text-indigo-600' : 'text-gray-500 hover:text-indigo-600' }` },
+                        c(icons.BookA, { size: 20 }),
+                        c('span', { className: "text-xs font-medium mt-1" }, 'Home')
+                    ),
+                    c('button', { onClick: () => { setCurrentPage('ebooks'); setCurrentGame('menu'); }, className: `flex-1 flex flex-col items-center p-2 rounded-full transition-colors ${ currentPage === 'ebooks' ? 'bg-indigo-100 text-indigo-600' : 'text-gray-500 hover:text-indigo-600' }` },
+                        c(icons.Book, { size: 20 }),
+                        c('span', { className: "text-xs font-medium mt-1" }, 'Ebooks')
+                    ),
+                    c('button', { onClick: () => { setCurrentPage('game'); setCurrentGame('menu'); }, className: `flex-1 flex flex-col items-center p-2 rounded-full transition-colors ${ currentPage === 'game' ? 'bg-indigo-100 text-indigo-600' : 'text-gray-500 hover:text-indigo-600' }` },
+                        c(icons.Gamepad, { size: 20 }),
+                        c('span', { className: "text-xs font-medium mt-1" }, 'Game')
+                    ),
+                    c('button', { onClick: () => { setCurrentPage('purpose'); setCurrentGame('menu'); }, className: `flex-1 flex flex-col items-center p-2 rounded-full transition-colors ${ currentPage === 'purpose' ? 'bg-indigo-100 text-indigo-600' : 'text-gray-500 hover:text-indigo-600' }` },
+                        c(icons.Handshake, { size: 20 }),
+                        c('span', { className: "text-xs font-medium mt-1" }, 'Purpose')
+                    )
+                )
+            );
+        };
+        const container = document.getElementById('root');
+        const root = createRoot(container);
+        root.render(c(App));
+    </script>
+</body>
+</html>
